@@ -461,6 +461,40 @@ def red_thread(x1, y1, x2, y2, sag=30):
     return f'<path d="M {x1} {y1} Q {mx} {my} {x2} {y2}" fill="none" stroke="{ACCENT}" stroke-width="3" stroke-dasharray="2,6" stroke-linecap="round"/>'
 
 
+def stamp_mark(cx, cy, text="XT", s=1.0, color=ACCENT):
+    """Small square 'artist signature' mark, bottom-right corner convention
+    for the 单图语录体 mode — gives cross-post recognizability the way a
+    real cartoonist's chop does."""
+    return f'''<g transform="translate({cx},{cy}) scale({s})">
+    <rect x="-22" y="-22" width="44" height="44" fill="{color}"/>
+    <text x="0" y="9" font-family="{FONT}" font-weight="900" font-size="22" fill="{PAPER}" text-anchor="middle">{esc(text)}</text>
+    </g>'''
+
+
+def build_quote_svg(image_content, caption_lines, signature="XT", width=900, height=1200,
+                     image_ratio=0.62, bg=PAPER):
+    """Canvas builder for the 单图语录体 mode: ONE image area (plain background,
+    single centered subject, no scene furniture) + a caption block below it.
+    caption_lines: list of strings, 2-3 short lines, rendered large and centered —
+    the caption IS the whole joke, there is no separate title/subtitle split here."""
+    img_h = height * image_ratio
+    body = [f'<svg viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">']
+    body.append(f'<rect x="0" y="0" width="{width}" height="{height}" fill="{bg}"/>')
+    body.append(f'<g>{image_content}</g>')
+    body.append(stamp_mark(width - 60, img_h - 40, signature, 1.0))
+    n = len(caption_lines)
+    size = 46 if n <= 2 else 40
+    line_h = size * 1.5
+    total_h = line_h * n
+    start_y = img_h + (height - img_h) / 2 - total_h / 2 + size
+    for i, line in enumerate(caption_lines):
+        y = start_y + i * line_h
+        body.append(f'<text x="{width/2}" y="{y}" font-family="{FONT}" font-weight="900" '
+                     f'font-size="{size}" fill="{INK}" text-anchor="middle">{esc(line)}</text>')
+    body.append('</svg>')
+    return "\n".join(body)
+
+
 def cross_out(cx, cy, r=34):
     return f'<line x1="{cx-r}" y1="{cy-r}" x2="{cx+r}" y2="{cy+r}" stroke="{ACCENT}" stroke-width="7" stroke-linecap="round"/><line x1="{cx-r}" y1="{cy+r}" x2="{cx+r}" y2="{cy-r}" stroke="{ACCENT}" stroke-width="7" stroke-linecap="round"/>'
 
