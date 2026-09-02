@@ -495,6 +495,46 @@ def build_quote_svg(image_content, caption_lines, signature="XT", width=900, hei
     return "\n".join(body)
 
 
+def blanket_burrito(cx, cy, s=1.0):
+    """Mode-B prop: a person wrapped up in a blanket like a burrito, only a
+    sleepy squinting face peeking out. Reusable for any 'exhausted but still
+    doing X' daily-life quote card."""
+    g = [f'<g transform="translate({cx},{cy}) scale({s})">']
+    g.append(f'<ellipse cx="0" cy="30" rx="150" ry="95" fill="#c9b8e0" stroke="{INK}" stroke-width="5"/>')
+    for x in (-90, -40, 20, 80):
+        g.append(f'<path d="M {x} -55 Q {x+20} 30 {x} 105" fill="none" stroke="{INK}" stroke-width="2" opacity="0.35"/>')
+    g.append(f'<circle cx="-30" cy="-30" r="52" fill="#fbead9" stroke="{INK}" stroke-width="5"/>')
+    g.append(f'<path d="M -30 -78 Q -80 -85 -80 -30 Q -80 -50 -30 -78 Z" fill="{INK}"/>')
+    g.append(f'<path d="M -52 -32 Q -46 -26 -40 -32" fill="none" stroke="{INK}" stroke-width="4" stroke-linecap="round"/>')
+    g.append(f'<path d="M -22 -32 Q -16 -26 -10 -32" fill="none" stroke="{INK}" stroke-width="4" stroke-linecap="round"/>')
+    g.append(f'<circle cx="-14" cy="-8" r="10" fill="{ACCENT}" opacity="0.35"/>')
+    g.append(f'<circle cx="-46" cy="-8" r="10" fill="{ACCENT}" opacity="0.35"/>')
+    g.append(f'<text x="20" y="-70" font-family="{FONT}" font-weight="700" font-size="26" fill="{INK}" opacity="0.6">Z z z</text>')
+    g.append('</g>')
+    return "\n".join(g)
+
+
+def phone_glow_hand(cx, cy, s=1.0, flip=False):
+    """Mode-B prop: an arm emerging (from a blanket, desk, etc.) holding a
+    glowing phone, with an exaggerated 'energetic' scrolling finger — the
+    visual joke of one body part refusing to be as tired as the rest."""
+    fx = -1 if flip else 1
+    g = [f'<g transform="translate({cx},{cy}) scale({fx*s},{s})">']
+    for r, op in ((95, 0.15), (75, 0.22), (55, 0.3)):
+        g.append(f'<circle cx="0" cy="0" r="{r}" fill="{WARM}" opacity="{op}"/>')
+    g.append(f'<path d="M -55 75 Q -30 15 -10 10" fill="none" stroke="#fbead9" stroke-width="34" stroke-linecap="round"/>')
+    g.append(f'<path d="M -55 75 Q -30 15 -10 10" fill="none" stroke="{INK}" stroke-width="6" stroke-linecap="round"/>')
+    g.append(f'<rect x="-38" y="-58" width="56" height="100" rx="10" fill="{INK}"/>')
+    g.append(f'<rect x="-32" y="-50" width="44" height="84" fill="{WARM}"/>')
+    g.append(f'<ellipse cx="14" cy="4" rx="9" ry="13" fill="#fbead9" stroke="{INK}" stroke-width="3.5"/>')
+    g.append(f'<rect x="7" y="-6" width="14" height="7" rx="3" fill="{ACCENT}"/>')
+    g.append(f'<path d="M 14 -20 l -6 -8 M 14 -20 l 6 -8 M 14 -20 l 0 -10" stroke="{INK}" stroke-width="2" stroke-linecap="round"/>')
+    for i, dx in enumerate((30, 40, 50)):
+        g.append(f'<line x1="{dx}" y1="{-10+i*3}" x2="{dx+16}" y2="{-16+i*3}" stroke="{INK}" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>')
+    g.append('</g>')
+    return "\n".join(g)
+
+
 def cross_out(cx, cy, r=34):
     return f'<line x1="{cx-r}" y1="{cy-r}" x2="{cx+r}" y2="{cy+r}" stroke="{ACCENT}" stroke-width="7" stroke-linecap="round"/><line x1="{cx-r}" y1="{cy+r}" x2="{cx+r}" y2="{cy-r}" stroke="{ACCENT}" stroke-width="7" stroke-linecap="round"/>'
 
