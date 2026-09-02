@@ -608,6 +608,106 @@ def phone_overhead(cx, cy, s=1.0):
     return "\n".join(g)
 
 
+def bedroom_phone_scene(px, py, pw, ph):
+    """Mode-B 'grounded scene' variant: fills the WHOLE image area with a
+    moody night bedroom (wall, picture frame, nightstand + glowing lamp,
+    a real bed with headboard and blanket) and a simple round-headed
+    character sitting up, ONE hand holding a phone at chest height, with
+    genuinely tired half-lidded eyes and a single tear/sweat drop. Use this
+    instead of a plain-background single subject when the feeling calls for
+    a real, atmospheric setting rather than an isolated icon — pass the
+    full image-area rectangle (px, py, pw, ph)."""
+    g = [f'<g transform="translate({px},{py})">']
+    # wall
+    g.append(f'<rect x="0" y="0" width="{pw}" height="{ph}" fill="#4a3436"/>')
+    g.append(f'<rect x="0" y="{ph*0.7}" width="{pw}" height="{ph*0.3}" fill="#3a2a2c"/>')
+    # picture frame on the wall
+    fx, fy = pw*0.16, ph*0.08
+    g.append(f'<rect x="{fx}" y="{fy}" width="92" height="112" fill="#2e2022" stroke="#c9a24b" stroke-width="5"/>')
+    g.append(f'<rect x="{fx+12}" y="{fy+12}" width="68" height="88" fill="#5a4a3a"/>')
+    # nightstand + glowing lamp
+    nx, ny = pw*0.05, ph*0.56
+    for r, op in ((120, 0.10), (85, 0.16), (55, 0.24)):
+        g.append(f'<circle cx="{nx+55}" cy="{ny-70}" r="{r}" fill="#f2c76b" opacity="{op}"/>')
+    g.append(f'<rect x="{nx}" y="{ny}" width="115" height="{ph-ny}" fill="#5a3d2e" stroke="#2e2022" stroke-width="3"/>')
+    g.append(f'<rect x="{nx+8}" y="{ny+18}" width="99" height="6" fill="#2e2022" opacity="0.4"/>')
+    g.append(f'<path d="M {nx+35} {ny-70} L {nx+75} {ny-70} L {nx+65} {ny-20} L {nx+45} {ny-20} Z" fill="#f2c76b" stroke="#8a6a2a" stroke-width="2"/>')
+    g.append(f'<rect x="{nx+50}" y="{ny-20}" width="10" height="20" fill="#3a2a1a"/>')
+    # bed headboard
+    hx0, hx1 = pw*0.16, pw*0.98
+    g.append(f'<path d="M {hx0} {ph*0.62} L {hx0} {ph*0.22} Q {(hx0+hx1)/2} {ph*0.06} {hx1} {ph*0.22} L {hx1} {ph*0.62} Z" '
+              f'fill="#6b4a36" stroke="#2e2022" stroke-width="4"/>')
+    g.append(f'<path d="M {hx0+18} {ph*0.60} L {hx0+18} {ph*0.26} Q {(hx0+hx1)/2} {ph*0.13} {hx1-18} {ph*0.26} L {hx1-18} {ph*0.60} Z" '
+              f'fill="none" stroke="#8a6a4a" stroke-width="3"/>')
+    g.append(f'<ellipse cx="{(hx0+hx1)/2}" cy="{ph*0.14}" rx="10" ry="16" fill="#2e2022"/>')
+    # blanket, draped over the lower body
+    g.append(f'<path d="M {pw*0.22} {ph*0.62} Q {pw*0.2} {ph*0.85} {pw*0.3} {ph} L {pw*0.92} {ph} '
+              f'Q {pw*0.98} {ph*0.8} {pw*0.9} {ph*0.6} Q {pw*0.6} {ph*0.72} {pw*0.22} {ph*0.62} Z" '
+              f'fill="#8b98ab" stroke="#2e2022" stroke-width="4"/>')
+    for fx2, fy2 in ((pw*0.4, ph*0.75), (pw*0.55, ph*0.8), (pw*0.7, ph*0.76)):
+        g.append(f'<path d="M {fx2} {fy2} Q {fx2+20} {fy2+40} {fx2-10} {fy2+80}" fill="none" stroke="{INK}" stroke-width="2" opacity="0.2"/>')
+    # character — simple round cream head+body sitting up against the headboard
+    ccx, ccy, r = pw*0.54, ph*0.53, 155
+    g.append(f'<circle cx="{ccx}" cy="{ccy}" r="{r}" fill="#f7f1e6" stroke="{INK}" stroke-width="5"/>')
+    # arm + hand holding the phone at chest height (ONE hand, natural, clear of the face)
+    sx, sy = ccx+r*0.55, ccy+r*0.75
+    ex2, ey2 = ccx+r*1.05, ccy+r*0.55
+    phx, phy = ccx+r*0.62, ccy+r*0.32
+    g.append(f'<path d="M {sx} {sy} L {ex2} {ey2} L {phx} {phy}" '
+              f'fill="none" stroke="#f7f1e6" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>')
+    g.append(f'<path d="M {sx} {sy} L {ex2} {ey2} L {phx} {phy}" '
+              f'fill="none" stroke="{INK}" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>')
+    for rr, op in ((60, 0.18), (42, 0.28)):
+        g.append(f'<circle cx="{phx}" cy="{phy}" r="{rr}" fill="{WARM}" opacity="{op}"/>')
+    g.append(f'<rect x="{phx-24}" y="{phy-34}" width="48" height="76" rx="9" fill="{INK}"/>')
+    g.append(f'<rect x="{phx-18}" y="{phy-27}" width="36" height="62" fill="{WARM}"/>')
+    # tired droopy eyes with lash-line, plus one tear/sweat drop
+    ex1, ex2, ey = ccx-r*0.27, ccx+r*0.15, ccy-r*0.12
+    g.append(f'<path d="M {ex1-16} {ey} Q {ex1} {ey+9} {ex1+16} {ey}" fill="none" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>')
+    g.append(f'<path d="M {ex2-16} {ey+2} Q {ex2} {ey+11} {ex2+16} {ey+2}" fill="none" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>')
+    g.append(f'<circle cx="{ex1}" cy="{ey+5}" r="3" fill="{INK}"/>')
+    g.append(f'<circle cx="{ex2}" cy="{ey+7}" r="3" fill="{INK}"/>')
+    g.append(f'<path d="M {ex1-6} {ey+14} Q {ex1-9} {ey+30} {ex1-4} {ey+40} Q {ex1+1} {ey+30} {ex1-6} {ey+14} Z" '
+              f'fill="#bcd8ea" stroke="{INK}" stroke-width="2"/>')
+    # cheeks + small tired open mouth
+    g.append(f'<circle cx="{ccx-46}" cy="{ccy+22}" r="13" fill="{ACCENT}" opacity="0.25"/>')
+    g.append(f'<circle cx="{ccx+34}" cy="{ccy+24}" r="13" fill="{ACCENT}" opacity="0.25"/>')
+    g.append(f'<ellipse cx="{ccx-10}" cy="{ccy+46}" rx="9" ry="7" fill="{INK}" opacity="0.7"/>')
+    g.append('</g>')
+    return "\n".join(g)
+
+
+def outlined_text(cx, cy, text, size=42, fill="white", stroke=None, weight="900"):
+    stroke = stroke or INK
+    return (f'<text x="{cx}" y="{cy}" font-family="{FONT}" font-weight="{weight}" font-size="{size}" '
+            f'fill="none" stroke="{stroke}" stroke-width="{size*0.18}" stroke-linejoin="round" '
+            f'text-anchor="middle">{esc(text)}</text>'
+            f'<text x="{cx}" y="{cy}" font-family="{FONT}" font-weight="{weight}" font-size="{size}" '
+            f'fill="{fill}" text-anchor="middle">{esc(text)}</text>')
+
+
+def build_scene_card_svg(scene_content, top_lines=None, bottom_lines=None,
+                          signature="ESK", width=720, height=1200):
+    """Full-bleed 'grounded scene' card for mode B: the illustration fills
+    the ENTIRE canvas (a real environment — bedroom, kitchen, office —
+    rather than a plain background), with bold white outlined text overlaid
+    directly on the image near the top and/or bottom, meme-poster style.
+    Use this instead of build_quote_svg when the feeling calls for a real
+    atmospheric setting instead of an isolated subject on plain background."""
+    body = [f'<svg viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">']
+    body.append(f'<g>{scene_content}</g>')
+    if top_lines:
+        for i, line in enumerate(top_lines):
+            body.append(outlined_text(width/2, 90 + i*54, line, size=42))
+    if bottom_lines:
+        n = len(bottom_lines)
+        for i, line in enumerate(bottom_lines):
+            body.append(outlined_text(width/2, height - 60 - (n-1-i)*54, line, size=42))
+    body.append(stamp_mark(width - 50, height - 50, signature, 0.85))
+    body.append('</svg>')
+    return "\n".join(body)
+
+
 def cross_out(cx, cy, r=34):
     return f'<line x1="{cx-r}" y1="{cy-r}" x2="{cx+r}" y2="{cy+r}" stroke="{ACCENT}" stroke-width="7" stroke-linecap="round"/><line x1="{cx-r}" y1="{cy+r}" x2="{cx+r}" y2="{cy-r}" stroke="{ACCENT}" stroke-width="7" stroke-linecap="round"/>'
 
