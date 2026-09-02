@@ -496,20 +496,35 @@ def build_quote_svg(image_content, caption_lines, signature="ESK", width=900, he
 
 
 def blanket_burrito(cx, cy, s=1.0):
-    """Mode-B prop: a person wrapped up in a blanket like a burrito, only a
-    sleepy squinting face peeking out. Reusable for any 'exhausted but still
-    doing X' daily-life quote card."""
+    """Mode-B prop: a person wrapped up in a blanket like a burrito, with a
+    genuinely drowsy (not just closed-eye-smiling) face — droopy eyelids
+    literally weighed down by tiny dumbbells (concretizing '眼皮跟挂了秤砣
+    似的'), dark circles, a tilted head sinking into the collar, and a
+    drool drop. Reusable for any 'exhausted but still doing X' quote card."""
     g = [f'<g transform="translate({cx},{cy}) scale({s})">']
     g.append(f'<ellipse cx="0" cy="30" rx="150" ry="95" fill="#c9b8e0" stroke="{INK}" stroke-width="5"/>')
     for x in (-90, -40, 20, 80):
         g.append(f'<path d="M {x} -55 Q {x+20} 30 {x} 105" fill="none" stroke="{INK}" stroke-width="2" opacity="0.35"/>')
-    g.append(f'<circle cx="-30" cy="-30" r="52" fill="#fbead9" stroke="{INK}" stroke-width="5"/>')
-    g.append(f'<path d="M -30 -78 Q -80 -85 -80 -30 Q -80 -50 -30 -78 Z" fill="{INK}"/>')
-    g.append(f'<path d="M -52 -32 Q -46 -26 -40 -32" fill="none" stroke="{INK}" stroke-width="4" stroke-linecap="round"/>')
-    g.append(f'<path d="M -22 -32 Q -16 -26 -10 -32" fill="none" stroke="{INK}" stroke-width="4" stroke-linecap="round"/>')
-    g.append(f'<circle cx="-14" cy="-8" r="10" fill="{ACCENT}" opacity="0.35"/>')
-    g.append(f'<circle cx="-46" cy="-8" r="10" fill="{ACCENT}" opacity="0.35"/>')
-    g.append(f'<text x="20" y="-70" font-family="{FONT}" font-weight="700" font-size="26" fill="{INK}" opacity="0.6">Z z z</text>')
+    # head, tilted and sunk slightly into the collar
+    g.append('<g transform="translate(-30,-24) rotate(12)">')
+    g.append(f'<circle cx="0" cy="0" r="52" fill="#fbead9" stroke="{INK}" stroke-width="5"/>')
+    g.append(f'<path d="M 0 -48 Q -50 -55 -50 0 Q -50 -20 0 -48 Z" fill="{INK}"/>')
+    g.append(f'<ellipse cx="-22" cy="6" rx="13" ry="7" fill="#9c8bb8" opacity="0.4"/>')
+    g.append(f'<ellipse cx="16" cy="6" rx="13" ry="7" fill="#9c8bb8" opacity="0.4"/>')
+    g.append(f'<path d="M -34 -6 Q -22 4 -10 -2" fill="none" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>')
+    g.append(f'<path d="M 4 -4 Q 16 6 28 0" fill="none" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>')
+    g.append(f'<circle cx="-22" cy="2" r="2.6" fill="{INK}"/>')
+    g.append(f'<circle cx="16" cy="3" r="2.6" fill="{INK}"/>')
+    for ex, ey in ((-10, -2), (28, 0)):
+        g.append(f'<line x1="{ex}" y1="{ey}" x2="{ex+4}" y2="{ey+22}" stroke="{INK}" stroke-width="2"/>')
+        g.append(f'<circle cx="{ex+4}" cy="{ey+22}" r="6" fill="none" stroke="{INK}" stroke-width="3"/>')
+        g.append(f'<circle cx="{ex+4}" cy="{ey+22}" r="2" fill="{INK}"/>')
+    g.append(f'<circle cx="-24" cy="20" r="9" fill="{ACCENT}" opacity="0.3"/>')
+    g.append(f'<circle cx="18" cy="22" r="9" fill="{ACCENT}" opacity="0.3"/>')
+    g.append(f'<ellipse cx="-4" cy="30" rx="7" ry="5" fill="{INK}" opacity="0.75"/>')
+    g.append('<path d="M -8 34 Q -10 44 -6 50 Q -2 44 -8 34 Z" fill="#bcd8ea" opacity="0.85"/>')
+    g.append('</g>')
+    g.append(f'<text x="30" y="-72" font-family="{FONT}" font-weight="700" font-size="26" fill="{INK}" opacity="0.55">Z z z</text>')
     g.append('</g>')
     return "\n".join(g)
 
