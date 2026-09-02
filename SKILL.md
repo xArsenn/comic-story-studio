@@ -233,7 +233,7 @@ metaphor-library.md` 里有几套现成的、带角色映射表的隐喻世界�
 
 `scripts/comic_lib.py` 里有单图语录体专用的两个函数:
 
-- `stamp_mark(cx, cy, text="XT", s=1.0)`:右下角签名印章,`text` 换成账号自己
+- `stamp_mark(cx, cy, text="ESK", s=1.0)`:右下角签名印章,`text` 换成账号自己
   的缩写/符号
 - `build_quote_svg(image_content, caption_lines, signature, width, height,
   image_ratio)`:单图画布——上方 `image_ratio`(默认0.62)比例是插画区,下方是

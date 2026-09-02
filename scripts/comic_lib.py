@@ -461,7 +461,7 @@ def red_thread(x1, y1, x2, y2, sag=30):
     return f'<path d="M {x1} {y1} Q {mx} {my} {x2} {y2}" fill="none" stroke="{ACCENT}" stroke-width="3" stroke-dasharray="2,6" stroke-linecap="round"/>'
 
 
-def stamp_mark(cx, cy, text="XT", s=1.0, color=ACCENT):
+def stamp_mark(cx, cy, text="ESK", s=1.0, color=ACCENT):
     """Small square 'artist signature' mark, bottom-right corner convention
     for the 单图语录体 mode — gives cross-post recognizability the way a
     real cartoonist's chop does."""
@@ -471,7 +471,7 @@ def stamp_mark(cx, cy, text="XT", s=1.0, color=ACCENT):
     </g>'''
 
 
-def build_quote_svg(image_content, caption_lines, signature="XT", width=900, height=1200,
+def build_quote_svg(image_content, caption_lines, signature="ESK", width=900, height=1200,
                      image_ratio=0.62, bg=PAPER):
     """Canvas builder for the 单图语录体 mode: ONE image area (plain background,
     single centered subject, no scene furniture) + a caption block below it.
