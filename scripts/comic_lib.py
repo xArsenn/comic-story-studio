@@ -748,15 +748,12 @@ def hatch_fill(x, y, w, h, n=8, color=None, opacity=0.5):
     return "".join(lines)
 
 
-def worker_head(cx, cy, s=1.0, mood="neutral", glasses=True):
-    """Shared 打工人 face for the work-life quote series — round head,
-    sparse hair, small round glasses, thin brows, blush (via soft_defs'
-    gradient), reused across a whole series for consistency the way the
-    cat mascot is reused in mode A. mood: neutral/tired/happy/wide_eyed."""
-    g = [f'<g transform="translate({cx},{cy}) scale({s})">']
+def worker_face(cx, cy, s=1.0, mood="neutral", glasses=True, tilt=0):
+    """Just the face (used internally by worker_figure, and directly for
+    close-up reaction shots like the fourth-wall-break card)."""
+    g = [f'<g transform="translate({cx},{cy}) scale({s}) rotate({tilt})">']
     g.append(f'<circle cx="0" cy="0" r="70" fill="url(#skinShade)" stroke="{INK}" stroke-width="4.5"/>')
     g.append(f'<circle cx="0" cy="0" r="70" fill="none" stroke="{INK}" stroke-width="4.5"/>')
-    # sparse hair — just a fringe, not full coverage (matches reference's balding worker look)
     g.append(f'<path d="M -60 -18 Q -58 -55 -10 -62 Q 30 -66 55 -40 Q 20 -48 -10 -44 Q -40 -40 -60 -18 Z" fill="{INK}"/>')
     g.append(f'<circle cx="-46" cy="30" r="15" fill="url(#blushGrad)"/>')
     g.append(f'<circle cx="42" cy="32" r="15" fill="url(#blushGrad)"/>')
@@ -784,6 +781,88 @@ def worker_head(cx, cy, s=1.0, mood="neutral", glasses=True):
         g.append(f'<circle cx="-22" cy="4" r="3.5" fill="{INK}"/>')
         g.append(f'<circle cx="24" cy="4" r="3.5" fill="{INK}"/>')
         g.append(f'<path d="M -10 36 L 10 36" fill="none" stroke="{INK}" stroke-width="3" stroke-linecap="round"/>')
+    g.append('</g>')
+    return "\n".join(g)
+
+
+# kept for backward compatibility — same as worker_face
+worker_head = worker_face
+
+
+def worker_figure(cx, cy, s=1.0, mood="neutral", pose="stand", glasses=True, hold=None):
+    """Full 打工人 figure — head + torso + arms + legs — with a pose
+    vocabulary so the body actually changes with what the quote describes,
+    instead of reusing a floating head for every card. pose: stand/run/
+    push/lie/slump/reach/sip/carry/point/wave. hold: optional inline SVG
+    snippet (already positioned in LOCAL coords near the right hand,
+    roughly around (55,20)) for a held prop that should move with the arm,
+    e.g. a cup or a card — simplest way to attach a prop is to draw it
+    separately at the hand coordinates this function documents per pose."""
+    g = [f'<g transform="translate({cx},{cy}) scale({s})">']
+    shirt = "#8fa3b5"
+    pants = "#4a4a52"
+    if pose == "lie":
+        # lying on the back, legs kicking, arms flailing — for "struggling in bed"
+        g.append(f'<ellipse cx="30" cy="70" rx="95" ry="42" fill="{shirt}" stroke="{INK}" stroke-width="4.5"/>')
+        g.append(f'<path d="M 90 55 L 150 20" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(f'<path d="M 100 90 L 165 100" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(f'<path d="M -40 45 L -95 10" stroke="{shirt}" stroke-width="14" stroke-linecap="round"/>')
+        g.append(f'<path d="M -30 90 L -85 115" stroke="{shirt}" stroke-width="14" stroke-linecap="round"/>')
+        g.append(worker_face(-55, 20, 0.85, mood, glasses))
+    elif pose == "run":
+        g.append(f'<path d="M -20 -10 L 30 55 L 10 130" fill="none" stroke="{shirt}" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>')
+        g.append(f'<path d="M 10 130 L -20 165" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(f'<path d="M 5 100 L 55 150" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(f'<path d="M 15 20 L -45 -10" stroke="{shirt}" stroke-width="14" stroke-linecap="round"/>')
+        g.append(f'<path d="M 20 50 L 75 30" stroke="{shirt}" stroke-width="14" stroke-linecap="round"/>')
+        g.append(worker_face(0, -55, 0.85, mood, glasses, tilt=-8))
+    elif pose == "push":
+        g.append(f'<path d="M -10 -20 L 10 60 L -10 150" fill="none" stroke="{pants}" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>')
+        g.append(f'<path d="M -10 150 L -50 195" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(f'<path d="M -10 150 L 35 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(f'<path d="M 5 10 L 60 -15" stroke="{shirt}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(f'<path d="M 5 40 L 60 20" stroke="{shirt}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(worker_face(-30, -55, 0.85, mood, glasses, tilt=18))
+    elif pose == "slump":
+        g.append(f'<ellipse cx="0" cy="70" rx="80" ry="55" fill="{shirt}" stroke="{INK}" stroke-width="4.5"/>')
+        g.append(f'<path d="M -50 40 L -90 90" stroke="{shirt}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(f'<path d="M 50 40 L 30 100" stroke="{shirt}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(worker_face(20, -35, 0.85, mood, glasses, tilt=20))
+    elif pose == "reach":
+        g.append(f'<rect x="-45" y="10" width="90" height="120" rx="20" fill="{shirt}" stroke="{INK}" stroke-width="4.5"/>')
+        g.append(f'<path d="M -30 110 L -40 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(f'<path d="M 30 110 L 40 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(f'<path d="M -35 30 L -70 65" stroke="{shirt}" stroke-width="15" stroke-linecap="round"/>')
+        g.append(f'<path d="M 35 20 L 90 -30" stroke="{shirt}" stroke-width="15" stroke-linecap="round"/>')
+        g.append(worker_face(0, -50, 0.9, mood, glasses))
+    elif pose == "sip":
+        g.append(f'<rect x="-42" y="15" width="84" height="115" rx="18" fill="{shirt}" stroke="{INK}" stroke-width="4.5"/>')
+        g.append(f'<path d="M -25 115 L -35 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(f'<path d="M 25 115 L 35 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(f'<path d="M -35 35 L -65 75" stroke="{shirt}" stroke-width="15" stroke-linecap="round"/>')
+        g.append(f'<path d="M 35 30 L 60 -10" stroke="{shirt}" stroke-width="15" stroke-linecap="round"/>')
+        g.append(worker_face(0, -45, 0.9, mood, glasses))
+    elif pose == "wave":
+        g.append(f'<rect x="-42" y="15" width="84" height="115" rx="18" fill="{shirt}" stroke="{INK}" stroke-width="4.5"/>')
+        g.append(f'<path d="M -25 115 L -35 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(f'<path d="M 25 115 L 35 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(f'<path d="M -35 35 L -70 -5" stroke="{shirt}" stroke-width="15" stroke-linecap="round"/>')
+        g.append(f'<path d="M 35 35 L 70 -5" stroke="{shirt}" stroke-width="15" stroke-linecap="round"/>')
+        g.append(worker_face(0, -45, 0.9, mood, glasses))
+    elif pose == "point":
+        g.append(f'<rect x="-42" y="15" width="84" height="115" rx="18" fill="{shirt}" stroke="{INK}" stroke-width="4.5"/>')
+        g.append(f'<path d="M -25 115 L -35 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(f'<path d="M 25 115 L 35 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(f'<path d="M -35 35 L -55 85" stroke="{shirt}" stroke-width="15" stroke-linecap="round"/>')
+        g.append(f'<path d="M 35 30 L 100 5" stroke="{shirt}" stroke-width="15" stroke-linecap="round"/>')
+        g.append(worker_face(0, -45, 0.9, mood, glasses))
+    else:  # stand
+        g.append(f'<rect x="-42" y="15" width="84" height="115" rx="18" fill="{shirt}" stroke="{INK}" stroke-width="4.5"/>')
+        g.append(f'<path d="M -25 115 L -35 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(f'<path d="M 25 115 L 35 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(f'<path d="M -35 35 L -60 90" stroke="{shirt}" stroke-width="15" stroke-linecap="round"/>')
+        g.append(f'<path d="M 35 35 L 60 90" stroke="{shirt}" stroke-width="15" stroke-linecap="round"/>')
+        g.append(worker_face(0, -45, 0.9, mood, glasses))
     g.append('</g>')
     return "\n".join(g)
 
