@@ -1,6 +1,6 @@
 ---
 name: cat-comic-story
-description: "End-to-end skill for turning an article's argument (originally: finance/macro WeChat 公众号 pieces, but works for any life/career/business lesson) into a shareable narrative comic AND actually rendering it: writes the 起-承-转-合 script with a cat mascot, picks a sustained metaphor, renders real scene-based SVG/PNG panels (not floating icons) with an explicit real-world caption under every title so readers never have to guess, and assembles a matching short 图文 article for publishing. Use this whenever the user wants to turn an article, argument, or life/business lesson into a serialized meme-style comic for 公众号/朋友圈/小红书 — whether they only want the text script, or want actual finished images plus the publish-ready article. Trigger on phrases like \"做一组猫咪漫画\", \"创业段子图\", \"反转漫画\", \"分镜脚本\", \"把这篇文章做成漫画\", \"生成漫画配图\", \"图文并茂的文章\", or \"读者看不懂/太抽象\" (a request to revise comic panels for clarity)."
+description: "End-to-end skill for turning an article's argument (finance/macro WeChat 公众号 pieces, or any life/career/business lesson) into a shareable narrative comic AND rendering it: writes the 起-承-转-合 script with a cat mascot, applies humor/pacing techniques (contrast-cute, running gags, callback jokes, a skeptic side-character, trivia inserts) so it reads as entertaining rather than a slideshow, picks a sustained metaphor, renders scene-based SVG/PNG panels (not floating icons) with an explicit real-world caption under every title, and assembles a matching short 图文 article for publishing. Use whenever the user wants an article or lesson turned into a serialized meme-style comic for 公众号/朋友圈/小红书 — script only, or finished images plus publish-ready article. Trigger on \"做一组猫咪漫画\", \"创业段子图\", \"反转漫画\", \"分镜脚本\", \"把这篇文章做成漫画\", \"生成漫画配图\", \"图文并茂的文章\", \"读者看不懂/太抽象\", or \"内容太干/不够有趣/丰富一点\"."
 ---
 
 # 猫咪叙事漫画 (Cat Comic Story) Skill
@@ -33,6 +33,47 @@ description: "End-to-end skill for turning an article's argument (originally: fi
 
 标题保持 5-10 个汉字、动词开头或结果导向。**标题连读应该是一篇极简的微小说**,
 脱离插画也能读懂大概(这一条本身就是后面"清晰度"问题的第一道防线)。
+
+### 让内容更有趣、更丰富
+
+上面的骨架保证"讲得清楚";这一节保证"读得下去、读完还想转发"。清楚和有趣是
+两件事,清楚了不代表有趣——这一节专门补有趣和信息密度。
+
+**节奏:信息格与情绪格交替,不要格格都在讲道理**
+- 纯信息格(带新事实/新数据)和纯情绪格(负责逗一下、喘口气,没有新信息也没关系)
+  按 2:1 或 3:1 交替,不要连续超过三格都在"讲道理"
+- 判断标准:如果读完连续三格,读者只感觉在看加了插画的 PPT,就该插一格纯情绪
+  格了——哪怕这一格只是猫的一个反应镜头,没有标题字幕也可以
+
+**幽默手法清单(每组漫画挑 2-3 种就够,别堆砌)**
+- **反差萌**:概念越严肃,表现动作/画面越幼稚可爱(比如债务崩溃用一个"哇"地哭
+  出来的婴儿式表情,而不是严肃愁容)
+- **标题本身是个梗**:标题不只是描述画面,尽量让它读起来像双关或段子
+- **打破第四面墙**:主角猫偶尔直接扭头看镜头吐槽一句,比如翻白眼配"这波我不理解
+  但我接受"
+- **损友式吐槽**:让配角之间互怼、拆台,而不是单向"老师科普学生"——一来一回天
+  然比单向陈述更好读
+- **埋伏笔+回收**:开头出现的一个道具/台词/动作,结尾在不同语境下重新出现,形
+  成"回旋镖"笑点(比如开头猫的口头禅,结尾反着用一次)
+- **意外整活格**:讲道理讲到一半,插一格纯搞笑、无信息量的"离题"画面,制造意外
+  感,然后立刻收回主线,不影响整体隐喻统一
+
+**固定人设梗(跨系列的记忆点,不是单篇技巧)**
+- 给猫一个固定口头禅/招牌小动作(永远眯眼看穿真相、永远在关键时刻掏出同一个
+  道具),每个系列都用一次——读者认出这个梗,会产生跨系列的粘性
+- 拟人化配角也可以有一句"出场必说"的固定台词(比如债务角色每次登场先叹一口气)
+
+**内容丰富度:不只讲道理,还要给"料"**
+- **冷知识插卡**:每 3-4 格之间插一格与主线相关但独立的趣味小知识(比如讲美债
+  时插一格"历史上最大的美债持有方曾经是谁"),增加信息密度但不显得说教
+- **对照组角色**:加一个"杠精"或"小白"配角替读者提常见质疑,主角猫来回应——把
+  单向科普变成一来一回的对话
+- **灵魂拷问收尾**:结尾除了态度总结,单独加一格直接抛给读者的问题("换成你,会
+  买单吗?"),引导评论区互动
+- **彩蛋细节**:某一格背景里藏一个不影响主线、但细心读者能发现的小细节,结尾调
+  侃一句"你发现第 X 格的彩蛋了吗",鼓励反复看图/转发
+- **平行小剧场**:主线隐喻定了之后,允许一两格短暂跳出来玩一个反差风格(比如突
+  然切成灾难片预告片腔调),只要立刻收回主线,不影响整体统一性
 
 ### 选一个贯穿到底的隐喻
 
@@ -156,6 +197,8 @@ metaphor-library.md` 里有几套现成的、带角色映射表的隐喻世界�
 - [ ] 全系列隐喻统一,没有中途切换世界观
 - [ ] 图文文章的关键点够短(图片负责细节,文字不重复),引用的图片文件名和
   实际文件一致
+- [ ] 没有连续三格以上都是纯信息格;至少用了 2-3 种幽默手法,不是从头到尾一个
+  语气平铺直叙
 
 ---
 
