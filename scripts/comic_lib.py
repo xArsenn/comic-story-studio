@@ -621,10 +621,6 @@ def bedroom_phone_scene(px, py, pw, ph):
     # wall
     g.append(f'<rect x="0" y="0" width="{pw}" height="{ph}" fill="#4a3436"/>')
     g.append(f'<rect x="0" y="{ph*0.7}" width="{pw}" height="{ph*0.3}" fill="#3a2a2c"/>')
-    # picture frame on the wall
-    fx, fy = pw*0.16, ph*0.08
-    g.append(f'<rect x="{fx}" y="{fy}" width="92" height="112" fill="#2e2022" stroke="#c9a24b" stroke-width="5"/>')
-    g.append(f'<rect x="{fx+12}" y="{fy+12}" width="68" height="88" fill="#5a4a3a"/>')
     # nightstand + glowing lamp
     nx, ny = pw*0.05, ph*0.56
     for r, op in ((120, 0.10), (85, 0.16), (55, 0.24)):
@@ -661,6 +657,15 @@ def bedroom_phone_scene(px, py, pw, ph):
         g.append(f'<circle cx="{phx}" cy="{phy}" r="{rr}" fill="{WARM}" opacity="{op}"/>')
     g.append(f'<rect x="{phx-24}" y="{phy-34}" width="48" height="76" rx="9" fill="{INK}"/>')
     g.append(f'<rect x="{phx-18}" y="{phy-27}" width="36" height="62" fill="{WARM}"/>')
+    # second arm — resting relaxed on the blanket, so the character has both arms
+    rsx, rsy = ccx-r*0.55, ccy+r*0.7
+    rex, rey = ccx-r*0.95, ccy+r*1.0
+    rhx, rhy = ccx-r*0.65, ccy+r*1.25
+    g.append(f'<path d="M {rsx} {rsy} L {rex} {rey} L {rhx} {rhy}" '
+              f'fill="none" stroke="#f7f1e6" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>')
+    g.append(f'<path d="M {rsx} {rsy} L {rex} {rey} L {rhx} {rhy}" '
+              f'fill="none" stroke="{INK}" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>')
+    g.append(f'<ellipse cx="{rhx}" cy="{rhy}" rx="17" ry="14" fill="#f7f1e6" stroke="{INK}" stroke-width="4.5"/>')
     # tired droopy eyes with lash-line, plus one tear/sweat drop
     ex1, ex2, ey = ccx-r*0.27, ccx+r*0.15, ccy-r*0.12
     g.append(f'<path d="M {ex1-16} {ey} Q {ex1} {ey+9} {ex1+16} {ey}" fill="none" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>')
