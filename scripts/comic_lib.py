@@ -713,6 +713,81 @@ def build_scene_card_svg(scene_content, top_lines=None, bottom_lines=None,
     return "\n".join(body)
 
 
+def soft_defs():
+    """A few soft radial gradients, injected once per SVG, used to push
+    cheek/skin shading a little toward hand-painted softness instead of flat
+    fills — the practical ceiling for what plain SVG paths can approximate
+    of real marker/colored-pencil shading."""
+    return f'''<defs>
+    <radialGradient id="blushGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="{ACCENT}" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="{ACCENT}" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="skinShade" cx="45%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#fff6ea" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#f3d9b8" stop-opacity="0.4"/>
+    </radialGradient>
+    </defs>'''
+
+
+def hatch_fill(x, y, w, h, n=8, color=None, opacity=0.5):
+    """A handful of slightly uneven parallel lines — the cheap SVG
+    approximation of the sketchy hand-drawn hatching seen in marker
+    illustration (e.g. a stack of paper). Not a substitute for real
+    hand-drawn texture, just closer than a flat rect."""
+    color = color or INK
+    import random
+    rnd = random.Random(int(x*7+y*13))
+    lines = []
+    for i in range(n):
+        yy = y + h*i/(n-1)
+        jitter1 = rnd.uniform(-4, 4)
+        jitter2 = rnd.uniform(-4, 4)
+        lines.append(f'<line x1="{x}" y1="{yy+jitter1}" x2="{x+w}" y2="{yy+jitter2}" '
+                      f'stroke="{color}" stroke-width="1.6" opacity="{opacity}"/>')
+    return "".join(lines)
+
+
+def worker_head(cx, cy, s=1.0, mood="neutral", glasses=True):
+    """Shared 打工人 face for the work-life quote series — round head,
+    sparse hair, small round glasses, thin brows, blush (via soft_defs'
+    gradient), reused across a whole series for consistency the way the
+    cat mascot is reused in mode A. mood: neutral/tired/happy/wide_eyed."""
+    g = [f'<g transform="translate({cx},{cy}) scale({s})">']
+    g.append(f'<circle cx="0" cy="0" r="70" fill="url(#skinShade)" stroke="{INK}" stroke-width="4.5"/>')
+    g.append(f'<circle cx="0" cy="0" r="70" fill="none" stroke="{INK}" stroke-width="4.5"/>')
+    # sparse hair — just a fringe, not full coverage (matches reference's balding worker look)
+    g.append(f'<path d="M -60 -18 Q -58 -55 -10 -62 Q 30 -66 55 -40 Q 20 -48 -10 -44 Q -40 -40 -60 -18 Z" fill="{INK}"/>')
+    g.append(f'<circle cx="-46" cy="30" r="15" fill="url(#blushGrad)"/>')
+    g.append(f'<circle cx="42" cy="32" r="15" fill="url(#blushGrad)"/>')
+    if glasses:
+        g.append(f'<circle cx="-22" cy="2" r="17" fill="none" stroke="{INK}" stroke-width="3"/>')
+        g.append(f'<circle cx="24" cy="2" r="17" fill="none" stroke="{INK}" stroke-width="3"/>')
+        g.append(f'<line x1="-5" y1="0" x2="5" y2="0" stroke="{INK}" stroke-width="3"/>')
+        g.append(f'<line x1="-39" y1="-2" x2="-52" y2="-8" stroke="{INK}" stroke-width="3"/>')
+        g.append(f'<line x1="41" y1="-2" x2="54" y2="-8" stroke="{INK}" stroke-width="3"/>')
+    if mood == "tired":
+        g.append(f'<path d="M -30 -14 Q -22 -20 -14 -14" fill="none" stroke="{INK}" stroke-width="3.5" stroke-linecap="round"/>')
+        g.append(f'<path d="M 12 -14 Q 20 -20 28 -14" fill="none" stroke="{INK}" stroke-width="3.5" stroke-linecap="round"/>')
+        g.append(f'<circle cx="-22" cy="4" r="3.5" fill="{INK}"/>')
+        g.append(f'<circle cx="24" cy="4" r="3.5" fill="{INK}"/>')
+        g.append(f'<path d="M -12 38 Q 0 32 12 38" fill="none" stroke="{INK}" stroke-width="3" stroke-linecap="round"/>')
+    elif mood == "happy":
+        g.append(f'<path d="M -30 -6 Q -22 -14 -14 -6" fill="none" stroke="{INK}" stroke-width="3.5" stroke-linecap="round"/>')
+        g.append(f'<path d="M 12 -6 Q 20 -14 28 -6" fill="none" stroke="{INK}" stroke-width="3.5" stroke-linecap="round"/>')
+        g.append(f'<path d="M -14 34 Q 0 46 14 34" fill="none" stroke="{INK}" stroke-width="3.5" stroke-linecap="round"/>')
+    elif mood == "wide_eyed":
+        g.append(f'<circle cx="-22" cy="2" r="5" fill="{INK}"/>')
+        g.append(f'<circle cx="24" cy="2" r="5" fill="{INK}"/>')
+        g.append(f'<path d="M -8 36 Q 0 30 8 36" fill="none" stroke="{INK}" stroke-width="3" stroke-linecap="round"/>')
+    else:
+        g.append(f'<circle cx="-22" cy="4" r="3.5" fill="{INK}"/>')
+        g.append(f'<circle cx="24" cy="4" r="3.5" fill="{INK}"/>')
+        g.append(f'<path d="M -10 36 L 10 36" fill="none" stroke="{INK}" stroke-width="3" stroke-linecap="round"/>')
+    g.append('</g>')
+    return "\n".join(g)
+
+
 def cross_out(cx, cy, r=34):
     return f'<line x1="{cx-r}" y1="{cy-r}" x2="{cx+r}" y2="{cy+r}" stroke="{ACCENT}" stroke-width="7" stroke-linecap="round"/><line x1="{cx-r}" y1="{cy+r}" x2="{cx+r}" y2="{cy-r}" stroke="{ACCENT}" stroke-width="7" stroke-linecap="round"/>'
 
