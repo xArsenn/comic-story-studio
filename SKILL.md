@@ -1,9 +1,9 @@
 ---
-name: cat-comic-story
+name: comic-story-studio
 description: "End-to-end skill for turning an article's argument or a feeling into a shareable comic AND rendering it. Two modes: (A) 多格叙事体 — a continuous 起-承-转-合 narrative with a cat mascot and one sustained metaphor, rendered as scene-based SVG/PNG panels with a real-world caption under every title; (B) 单图语录体 — standalone single-image quote cards (plain bg, one centered subject, punchy 2-3 line caption below, signature stamp), styled after viral workplace-venting comics. Both share a copywriting-techniques library (metaphor concretization, puns, parody of classics, absurd-logic reversal, comparison escalation, setup-punchline, rhyme, dark-humor limits) and an emotional pacing template (empathize→escalate→self-aware pivot→soft landing). Use for turning an article/feeling into a comic for 公众号/朋友圈/小红书 — script only, or finished images plus article. Trigger on \"做一组猫咪漫画\", \"创业段子图\", \"反转漫画\", \"分镜脚本\", \"把这篇文章做成漫画\", \"生成漫画配图\", \"图文并茂的文章\", \"读者看不懂/太抽象\", \"内容太干/不够有趣\", \"单图语录漫画\", or \"吐槽漫画\"."
 ---
 
-# 猫咪叙事漫画 (Cat Comic Story) Skill
+# 漫画创作工作室 (Comic Story Studio) Skill
 
 把一段说理/道理/情绪,变成一组可发布的漫画,**并且实际渲染成图片**(SVG→PNG)。
 这个 skill 有两种模式,先选模式再动手:
