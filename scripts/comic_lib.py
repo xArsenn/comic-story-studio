@@ -532,23 +532,66 @@ def blanket_burrito(cx, cy, s=1.0):
     return "\n".join(g)
 
 
-def phone_glow_hand(cx, cy, s=1.0, flip=False):
-    """Mode-B prop: an arm emerging (from a blanket, desk, etc.) holding a
-    glowing phone, with an exaggerated 'energetic' scrolling finger — the
-    visual joke of one body part refusing to be as tired as the rest."""
-    fx = -1 if flip else 1
-    g = [f'<g transform="translate({cx},{cy}) scale({fx*s},{s})">']
-    for r, op in ((95, 0.15), (75, 0.22), (55, 0.3)):
-        g.append(f'<circle cx="0" cy="0" r="{r}" fill="{WARM}" opacity="{op}"/>')
-    g.append(f'<path d="M -55 75 Q -30 15 -10 10" fill="none" stroke="#fbead9" stroke-width="34" stroke-linecap="round"/>')
-    g.append(f'<path d="M -55 75 Q -30 15 -10 10" fill="none" stroke="{INK}" stroke-width="6" stroke-linecap="round"/>')
-    g.append(f'<rect x="-38" y="-58" width="56" height="100" rx="10" fill="{INK}"/>')
-    g.append(f'<rect x="-32" y="-50" width="44" height="84" fill="{WARM}"/>')
-    g.append(f'<ellipse cx="14" cy="4" rx="9" ry="13" fill="#fbead9" stroke="{INK}" stroke-width="3.5"/>')
-    g.append(f'<rect x="7" y="-6" width="14" height="7" rx="3" fill="{ACCENT}"/>')
-    g.append(f'<path d="M 14 -20 l -6 -8 M 14 -20 l 6 -8 M 14 -20 l 0 -10" stroke="{INK}" stroke-width="2" stroke-linecap="round"/>')
-    for i, dx in enumerate((30, 40, 50)):
-        g.append(f'<line x1="{dx}" y1="{-10+i*3}" x2="{dx+16}" y2="{-16+i*3}" stroke="{INK}" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>')
+def lying_phone_scene(cx, cy, s=1.0):
+    """Mode-B prop: a person lying on their back in bed, blanket draped over
+    the body (not wrapped like a cocoon), BOTH hands holding a glowing phone
+    up overhead, eyes open and fixed on the screen but heavy-lidded and
+    tired (dark circles, strained brows) — awake and scrolling, not asleep.
+    Reusable for any 'exhausted but still on the phone' daily-life card."""
+    g = [f'<g transform="translate({cx},{cy}) scale({s})">']
+    # pillow
+    g.append(f'<ellipse cx="0" cy="40" rx="175" ry="78" fill="#dfe6ee" stroke="{INK}" stroke-width="4"/>')
+    # body + blanket, viewed from above, tapering down and off the bottom of frame
+    g.append('<path d="M -135 30 Q -165 190 -95 300 L 95 300 Q 165 190 135 30 '
+              'Q 70 55 0 55 Q -70 55 -135 30 Z" '
+              f'fill="#c9b8e0" stroke="{INK}" stroke-width="5"/>')
+    for x, sway in ((-70, -10), (-20, 8), (30, -6), (80, 10)):
+        g.append(f'<path d="M {x} 60 Q {x+sway} 170 {x} 280" fill="none" stroke="{INK}" stroke-width="2" opacity="0.3"/>')
+    # arms, emerging from the blanket near the shoulders, reaching up to hold the phone overhead
+    g.append(f'<path d="M -95 45 Q -120 -60 -55 -145" fill="none" stroke="#c9b8e0" stroke-width="34" stroke-linecap="round"/>')
+    g.append(f'<path d="M -95 45 Q -120 -60 -55 -145" fill="none" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>')
+    g.append(f'<path d="M 95 45 Q 120 -60 55 -145" fill="none" stroke="#c9b8e0" stroke-width="34" stroke-linecap="round"/>')
+    g.append(f'<path d="M 95 45 Q 120 -60 55 -145" fill="none" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>')
+    g.append(f'<ellipse cx="-55" cy="-148" rx="16" ry="13" fill="#fbead9" stroke="{INK}" stroke-width="4"/>')
+    g.append(f'<ellipse cx="55" cy="-148" rx="16" ry="13" fill="#fbead9" stroke="{INK}" stroke-width="4"/>')
+    # head, resting on the pillow, face looking straight up at the phone
+    g.append(f'<circle cx="0" cy="0" r="72" fill="#fbead9" stroke="{INK}" stroke-width="5"/>')
+    g.append(f'<path d="M -68 -10 Q -60 -62 0 -62 Q 60 -62 68 -10 Q 30 -40 0 -40 Q -30 -40 -68 -10 Z" fill="{INK}"/>')
+    # dark under/around-eye circles first, tired brows
+    g.append(f'<ellipse cx="-26" cy="6" rx="17" ry="10" fill="#9c8bb8" opacity="0.35"/>')
+    g.append(f'<ellipse cx="26" cy="6" rx="17" ry="10" fill="#9c8bb8" opacity="0.35"/>')
+    g.append(f'<path d="M -40 -14 Q -26 -20 -12 -13" fill="none" stroke="{INK}" stroke-width="4" stroke-linecap="round"/>')
+    g.append(f'<path d="M 12 -13 Q 26 -20 40 -14" fill="none" stroke="{INK}" stroke-width="4" stroke-linecap="round"/>')
+    # open eyes, fixed on the screen — visible round pupils, heavy half-closed upper lid
+    for ex in (-26, 26):
+        g.append(f'<ellipse cx="{ex}" cy="8" rx="15" ry="11" fill="white" stroke="{INK}" stroke-width="3.5"/>')
+        g.append(f'<circle cx="{ex}" cy="10" r="6.5" fill="{INK}"/>')
+        g.append(f'<circle cx="{ex+2}" cy="8" r="1.8" fill="white"/>')
+        g.append(f'<path d="M {ex-15} 2 Q {ex} -4 {ex+15} 2" fill="none" stroke="{INK}" stroke-width="4.5" stroke-linecap="round"/>')
+    # nose + small strained flat mouth (concentrating, not smiling)
+    g.append(f'<path d="M -4 20 Q 0 26 4 20" fill="none" stroke="{INK}" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>')
+    g.append(f'<path d="M -10 42 L 10 42" fill="none" stroke="{INK}" stroke-width="3.5" stroke-linecap="round"/>')
+    g.append(f'<circle cx="-38" cy="28" r="8" fill="{ACCENT}" opacity="0.25"/>')
+    g.append(f'<circle cx="38" cy="28" r="8" fill="{ACCENT}" opacity="0.25"/>')
+    # a single strain sweat-drop near the temple — conventional, safe cue
+    g.append(f'<path d="M 58 -30 Q 64 -18 58 -10 Q 52 -18 58 -30 Z" fill="#bcd8ea" stroke="{INK}" stroke-width="2"/>')
+    g.append('</g>')
+    return "\n".join(g)
+
+
+def phone_overhead(cx, cy, s=1.0):
+    """Mode-B prop: a glowing phone held overhead with both hands (pair with
+    lying_phone_scene), screen facing down so its light spills onto the face
+    below."""
+    g = [f'<g transform="translate({cx},{cy}) scale({s})">']
+    for r, op in ((110, 0.12), (85, 0.18), (60, 0.26)):
+        g.append(f'<circle cx="0" cy="30" r="{r}" fill="{WARM}" opacity="{op}"/>')
+    g.append(f'<rect x="-44" y="-70" width="88" height="150" rx="14" fill="{INK}"/>')
+    g.append(f'<rect x="-36" y="-60" width="72" height="128" fill="{WARM}"/>')
+    g.append(f'<circle cx="0" cy="-52" r="4" fill="{INK}" opacity="0.6"/>')
+    for i, dy in enumerate((-10, 10, 30)):
+        g.append(f'<line x1="{-55}" y1="{dy}" x2="{-72}" y2="{dy-6}" stroke="{INK}" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>')
+        g.append(f'<line x1="{55}" y1="{dy}" x2="{72}" y2="{dy-6}" stroke="{INK}" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>')
     g.append('</g>')
     return "\n".join(g)
 
