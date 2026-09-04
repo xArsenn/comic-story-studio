@@ -476,9 +476,11 @@ def build_quote_svg(image_content, caption_lines, signature="ESK", width=900, he
     """Canvas builder for the 单图语录体 mode: ONE image area (plain background,
     single centered subject, no scene furniture) + a caption block below it.
     caption_lines: list of strings, 2-3 short lines, rendered large and centered —
-    the caption IS the whole joke, there is no separate title/subtitle split here."""
+    the caption IS the whole joke, there is no separate title/subtitle split here.
+    soft_defs() gradients are injected automatically — don't prepend them yourself."""
     img_h = height * image_ratio
     body = [f'<svg viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">']
+    body.append(soft_defs())
     body.append(f'<rect x="0" y="0" width="{width}" height="{height}" fill="{bg}"/>')
     body.append(f'<g>{image_content}</g>')
     body.append(stamp_mark(width - 60, img_h - 40, signature, 1.0))
@@ -608,76 +610,144 @@ def phone_overhead(cx, cy, s=1.0):
     return "\n".join(g)
 
 
-def bedroom_phone_scene(px, py, pw, ph):
-    """Mode-B 'grounded scene' variant: fills the WHOLE image area with a
-    moody night bedroom (wall, picture frame, nightstand + glowing lamp,
-    a real bed with headboard and blanket) and a simple round-headed
-    character sitting up, ONE hand holding a phone at chest height, with
-    genuinely tired half-lidded eyes and a single tear/sweat drop. Use this
-    instead of a plain-background single subject when the feeling calls for
-    a real, atmospheric setting rather than an isolated icon — pass the
-    full image-area rectangle (px, py, pw, ph)."""
-    g = [f'<g transform="translate({px},{py})">']
-    # wall
-    g.append(f'<rect x="0" y="0" width="{pw}" height="{ph}" fill="#4a3436"/>')
-    g.append(f'<rect x="0" y="{ph*0.7}" width="{pw}" height="{ph*0.3}" fill="#3a2a2c"/>')
-    # nightstand + glowing lamp
-    nx, ny = pw*0.05, ph*0.56
+def room_wall(px, py, pw, ph, wall_color="#4a3436", floor_color="#3a2a2c", floor_ratio=0.3):
+    """Reusable scene backdrop: a wall + a slightly darker floor/baseboard
+    band. The starting piece for any full-bleed mode-B scene card."""
+    return (f'<rect x="0" y="0" width="{pw}" height="{ph}" fill="{wall_color}"/>'
+            f'<rect x="0" y="{ph*(1-floor_ratio)}" width="{pw}" height="{ph*floor_ratio}" fill="{floor_color}"/>')
+
+
+def glow_lamp(x, y, glow_color="#f2c76b", shade_color="#f2c76b"):
+    """A small lamp with a soft layered glow — reusable wherever a scene
+    needs a warm light source (nightstand, desk lamp, etc.)."""
+    g = []
     for r, op in ((120, 0.10), (85, 0.16), (55, 0.24)):
-        g.append(f'<circle cx="{nx+55}" cy="{ny-70}" r="{r}" fill="#f2c76b" opacity="{op}"/>')
-    g.append(f'<rect x="{nx}" y="{ny}" width="115" height="{ph-ny}" fill="#5a3d2e" stroke="#2e2022" stroke-width="3"/>')
-    g.append(f'<rect x="{nx+8}" y="{ny+18}" width="99" height="6" fill="#2e2022" opacity="0.4"/>')
-    g.append(f'<path d="M {nx+35} {ny-70} L {nx+75} {ny-70} L {nx+65} {ny-20} L {nx+45} {ny-20} Z" fill="#f2c76b" stroke="#8a6a2a" stroke-width="2"/>')
-    g.append(f'<rect x="{nx+50}" y="{ny-20}" width="10" height="20" fill="#3a2a1a"/>')
-    # bed headboard
-    hx0, hx1 = pw*0.16, pw*0.98
-    g.append(f'<path d="M {hx0} {ph*0.62} L {hx0} {ph*0.22} Q {(hx0+hx1)/2} {ph*0.06} {hx1} {ph*0.22} L {hx1} {ph*0.62} Z" '
-              f'fill="#6b4a36" stroke="#2e2022" stroke-width="4"/>')
-    g.append(f'<path d="M {hx0+18} {ph*0.60} L {hx0+18} {ph*0.26} Q {(hx0+hx1)/2} {ph*0.13} {hx1-18} {ph*0.26} L {hx1-18} {ph*0.60} Z" '
-              f'fill="none" stroke="#8a6a4a" stroke-width="3"/>')
-    g.append(f'<ellipse cx="{(hx0+hx1)/2}" cy="{ph*0.14}" rx="10" ry="16" fill="#2e2022"/>')
-    # blanket, draped over the lower body
-    g.append(f'<path d="M {pw*0.22} {ph*0.62} Q {pw*0.2} {ph*0.85} {pw*0.3} {ph} L {pw*0.92} {ph} '
-              f'Q {pw*0.98} {ph*0.8} {pw*0.9} {ph*0.6} Q {pw*0.6} {ph*0.72} {pw*0.22} {ph*0.62} Z" '
-              f'fill="#8b98ab" stroke="#2e2022" stroke-width="4"/>')
+        g.append(f'<circle cx="{x}" cy="{y-70}" r="{r}" fill="{glow_color}" opacity="{op}"/>')
+    g.append(f'<path d="M {x-20} {y-70} L {x+20} {y-70} L {x+10} {y-20} L {x-10} {y-20} Z" '
+              f'fill="{shade_color}" stroke="#8a6a2a" stroke-width="2"/>')
+    g.append(f'<rect x="{x-5}" y="{y-20}" width="10" height="20" fill="#3a2a1a"/>')
+    return "".join(g)
+
+
+def nightstand(x, y, ph, w=115, color="#5a3d2e"):
+    """A nightstand at (x, y) reaching down to the scene floor (ph);
+    pairs with glow_lamp(x + w*0.5, y) for the lamp on top."""
+    return (f'<rect x="{x}" y="{y}" width="{w}" height="{ph-y}" fill="{color}" stroke="#2e2022" stroke-width="3"/>'
+            f'<rect x="{x+8}" y="{y+18}" width="{w-16}" height="6" fill="#2e2022" opacity="0.4"/>')
+
+
+def bed_headboard(hx0, hx1, y_top, y_bottom, wood="#6b4a36"):
+    """An arched wooden headboard spanning x=[hx0,hx1], from y_top (arch
+    peak) to y_bottom (where the blanket takes over)."""
+    mid = (hx0+hx1)/2
+    return (f'<path d="M {hx0} {y_bottom} L {hx0} {y_top+y_bottom*0.35} Q {mid} {y_top} '
+            f'{hx1} {y_top+y_bottom*0.35} L {hx1} {y_bottom} Z" fill="{wood}" stroke="#2e2022" stroke-width="4"/>'
+            f'<path d="M {hx0+18} {y_bottom-2} L {hx0+18} {y_top+y_bottom*0.42} Q {mid} {y_top+y_bottom*0.12} '
+            f'{hx1-18} {y_top+y_bottom*0.42} L {hx1-18} {y_bottom-2} Z" fill="none" stroke="#8a6a4a" stroke-width="3"/>'
+            f'<ellipse cx="{mid}" cy="{y_top+y_bottom*0.06}" rx="10" ry="16" fill="#2e2022"/>')
+
+
+def blanket_drape(pw, ph, y_top_ratio=0.62, color="#8b98ab"):
+    """A blanket draped over the lower portion of a scene, from
+    y=ph*y_top_ratio down to the bottom of the frame."""
+    yt = ph*y_top_ratio
+    g = [f'<path d="M {pw*0.22} {yt} Q {pw*0.2} {ph*0.85} {pw*0.3} {ph} L {pw*0.92} {ph} '
+         f'Q {pw*0.98} {ph*0.8} {pw*0.9} {ph*(y_top_ratio-0.02)} Q {pw*0.6} {yt+ph*0.1} {pw*0.22} {yt} Z" '
+         f'fill="{color}" stroke="#2e2022" stroke-width="4"/>']
     for fx2, fy2 in ((pw*0.4, ph*0.75), (pw*0.55, ph*0.8), (pw*0.7, ph*0.76)):
         g.append(f'<path d="M {fx2} {fy2} Q {fx2+20} {fy2+40} {fx2-10} {fy2+80}" fill="none" stroke="{INK}" stroke-width="2" opacity="0.2"/>')
-    # character — simple round cream head+body sitting up against the headboard
+    return "".join(g)
+
+
+def bent_arm_hand(sx, sy, ex, ey, hx, hy, skin="#f7f1e6", width=32):
+    """A two-segment bent arm (shoulder→elbow→hand) ending in a simple
+    round hand — the general-purpose limb used across mode-B scene props.
+    Pass hx,hy as the hand position; draw any held prop centered there."""
+    return (f'<path d="M {sx} {sy} L {ex} {ey} L {hx} {hy}" fill="none" stroke="{skin}" '
+            f'stroke-width="{width}" stroke-linecap="round" stroke-linejoin="round"/>'
+            f'<path d="M {sx} {sy} L {ex} {ey} L {hx} {hy}" fill="none" stroke="{INK}" '
+            f'stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>')
+
+
+def tired_eyes_with_tear(cx, cy, r):
+    """Droopy-but-open tired eyes (scaled to head radius r) plus one tear/
+    sweat drop — the 'awake but exhausted' face used across scene cards."""
+    ex1, ex2, ey = cx-r*0.27, cx+r*0.15, cy-r*0.12
+    return (f'<path d="M {ex1-16} {ey} Q {ex1} {ey+9} {ex1+16} {ey}" fill="none" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>'
+            f'<path d="M {ex2-16} {ey+2} Q {ex2} {ey+11} {ex2+16} {ey+2}" fill="none" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>'
+            f'<circle cx="{ex1}" cy="{ey+5}" r="3" fill="{INK}"/>'
+            f'<circle cx="{ex2}" cy="{ey+7}" r="3" fill="{INK}"/>'
+            f'<path d="M {ex1-6} {ey+14} Q {ex1-9} {ey+30} {ex1-4} {ey+40} Q {ex1+1} {ey+30} {ex1-6} {ey+14} Z" '
+            f'fill="#bcd8ea" stroke="{INK}" stroke-width="2"/>')
+
+
+def bedroom_phone_scene(px, py, pw, ph):
+    """Mode-B 'grounded scene': a moody night bedroom (wall, nightstand +
+    glowing lamp, a real bed with headboard and blanket) and a simple
+    round-headed character sitting up, ONE hand holding a phone at chest
+    height, the other resting on the blanket, tired-but-awake eyes with a
+    tear/sweat drop. Built from the reusable pieces above — copy this
+    function's shape when building a new scene (see office_desk_scene)."""
+    g = [f'<g transform="translate({px},{py})">']
+    g.append(room_wall(px, py, pw, ph))
+    nx, ny = pw*0.05, ph*0.56
+    g.append(glow_lamp(nx+55, ny))
+    g.append(nightstand(nx, ny, ph))
+    hx0, hx1 = pw*0.16, pw*0.98
+    g.append(bed_headboard(hx0, hx1, ph*0.06, ph*0.62))
+    g.append(blanket_drape(pw, ph, 0.62))
+    # character
     ccx, ccy, r = pw*0.54, ph*0.53, 155
     g.append(f'<circle cx="{ccx}" cy="{ccy}" r="{r}" fill="#f7f1e6" stroke="{INK}" stroke-width="5"/>')
-    # arm + hand holding the phone at chest height (ONE hand, natural, clear of the face)
-    sx, sy = ccx+r*0.55, ccy+r*0.75
-    ex2, ey2 = ccx+r*1.05, ccy+r*0.55
     phx, phy = ccx+r*0.62, ccy+r*0.32
-    g.append(f'<path d="M {sx} {sy} L {ex2} {ey2} L {phx} {phy}" '
-              f'fill="none" stroke="#f7f1e6" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>')
-    g.append(f'<path d="M {sx} {sy} L {ex2} {ey2} L {phx} {phy}" '
-              f'fill="none" stroke="{INK}" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>')
+    g.append(bent_arm_hand(ccx+r*0.55, ccy+r*0.75, ccx+r*1.05, ccy+r*0.55, phx, phy, width=34))
     for rr, op in ((60, 0.18), (42, 0.28)):
         g.append(f'<circle cx="{phx}" cy="{phy}" r="{rr}" fill="{WARM}" opacity="{op}"/>')
     g.append(f'<rect x="{phx-24}" y="{phy-34}" width="48" height="76" rx="9" fill="{INK}"/>')
     g.append(f'<rect x="{phx-18}" y="{phy-27}" width="36" height="62" fill="{WARM}"/>')
-    # second arm — resting relaxed on the blanket, so the character has both arms
-    rsx, rsy = ccx-r*0.55, ccy+r*0.7
-    rex, rey = ccx-r*0.95, ccy+r*1.0
     rhx, rhy = ccx-r*0.65, ccy+r*1.25
-    g.append(f'<path d="M {rsx} {rsy} L {rex} {rey} L {rhx} {rhy}" '
-              f'fill="none" stroke="#f7f1e6" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>')
-    g.append(f'<path d="M {rsx} {rsy} L {rex} {rey} L {rhx} {rhy}" '
-              f'fill="none" stroke="{INK}" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>')
+    g.append(bent_arm_hand(ccx-r*0.55, ccy+r*0.7, ccx-r*0.95, ccy+r*1.0, rhx, rhy, width=30))
     g.append(f'<ellipse cx="{rhx}" cy="{rhy}" rx="17" ry="14" fill="#f7f1e6" stroke="{INK}" stroke-width="4.5"/>')
-    # tired droopy eyes with lash-line, plus one tear/sweat drop
-    ex1, ex2, ey = ccx-r*0.27, ccx+r*0.15, ccy-r*0.12
-    g.append(f'<path d="M {ex1-16} {ey} Q {ex1} {ey+9} {ex1+16} {ey}" fill="none" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>')
-    g.append(f'<path d="M {ex2-16} {ey+2} Q {ex2} {ey+11} {ex2+16} {ey+2}" fill="none" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>')
-    g.append(f'<circle cx="{ex1}" cy="{ey+5}" r="3" fill="{INK}"/>')
-    g.append(f'<circle cx="{ex2}" cy="{ey+7}" r="3" fill="{INK}"/>')
-    g.append(f'<path d="M {ex1-6} {ey+14} Q {ex1-9} {ey+30} {ex1-4} {ey+40} Q {ex1+1} {ey+30} {ex1-6} {ey+14} Z" '
-              f'fill="#bcd8ea" stroke="{INK}" stroke-width="2"/>')
-    # cheeks + small tired open mouth
+    g.append(tired_eyes_with_tear(ccx, ccy, r))
     g.append(f'<circle cx="{ccx-46}" cy="{ccy+22}" r="13" fill="{ACCENT}" opacity="0.25"/>')
     g.append(f'<circle cx="{ccx+34}" cy="{ccy+24}" r="13" fill="{ACCENT}" opacity="0.25"/>')
     g.append(f'<ellipse cx="{ccx-10}" cy="{ccy+46}" rx="9" ry="7" fill="{INK}" opacity="0.7"/>')
+    g.append('</g>')
+    return "\n".join(g)
+
+
+def office_desk_scene(px, py, pw, ph):
+    """Mode-B 'grounded scene': a late-office desk — wall, a desk lamp
+    (reusing glow_lamp), a monitor, a stack of papers, and a slumped
+    character with one arm on the desk and the other propping up their
+    head. Demonstrates reusing room_wall/glow_lamp/bent_arm_hand/
+    tired_eyes_with_tear for a scene OTHER than the bedroom."""
+    g = [f'<g transform="translate({px},{py})">']
+    g.append(room_wall(px, py, pw, ph, wall_color="#3d4652", floor_color="#2e3540"))
+    lx = pw*0.08
+    g.append(glow_lamp(lx, ph*0.5, glow_color="#f2c76b"))
+    # desk
+    dy = ph*0.72
+    g.append(f'<rect x="0" y="{dy}" width="{pw}" height="{ph-dy}" fill="#5a4636" stroke="#2e2022" stroke-width="4"/>')
+    g.append(f'<rect x="0" y="{dy}" width="{pw}" height="10" fill="#3a2a1a" opacity="0.5"/>')
+    # monitor
+    mx = pw*0.6
+    g.append(f'<rect x="{mx}" y="{dy-190}" width="220" height="150" rx="6" fill="#1c2126" stroke="{INK}" stroke-width="4"/>')
+    g.append(f'<rect x="{mx+12}" y="{dy-178}" width="196" height="126" fill="#3a5a6a" opacity="0.7"/>')
+    g.append(f'<rect x="{mx+90}" y="{dy-40}" width="40" height="14" fill="#1c2126"/>')
+    # paper stack, drawn with hatch_fill for a bit of sketchy texture
+    stx = pw*0.12
+    g.append(f'<rect x="{stx}" y="{dy-70}" width="130" height="70" fill="#e8e2d5" stroke="{INK}" stroke-width="3"/>')
+    g.append(hatch_fill(stx+10, dy-64, 110, 58, n=7, color=INK, opacity=0.35))
+    # character slumped over the desk, one arm flat, other propping up the head
+    ccx, ccy, r = pw*0.4, dy-150, 120
+    g.append(f'<circle cx="{ccx}" cy="{ccy}" r="{r}" fill="#f7f1e6" stroke="{INK}" stroke-width="5"/>')
+    g.append(bent_arm_hand(ccx-r*0.9, ccy+r*0.6, ccx-r*1.3, ccy+r*0.3, ccx-r*1.1, ccy-r*0.2, width=26))
+    g.append(bent_arm_hand(ccx+r*0.7, ccy+r*0.8, ccx+r*1.1, dy-10, ccx+r*1.4, dy-10, width=26))
+    g.append(tired_eyes_with_tear(ccx, ccy, r))
+    g.append(f'<circle cx="{ccx-r*0.33}" cy="{ccy+r*0.14}" r="{r*0.09}" fill="{ACCENT}" opacity="0.25"/>')
+    g.append(f'<circle cx="{ccx+r*0.24}" cy="{ccy+r*0.16}" r="{r*0.09}" fill="{ACCENT}" opacity="0.25"/>')
+    g.append(f'<ellipse cx="{ccx-r*0.07}" cy="{ccy+r*0.3}" rx="{r*0.06}" ry="{r*0.045}" fill="{INK}" opacity="0.7"/>')
     g.append('</g>')
     return "\n".join(g)
 
@@ -698,8 +768,10 @@ def build_scene_card_svg(scene_content, top_lines=None, bottom_lines=None,
     rather than a plain background), with bold white outlined text overlaid
     directly on the image near the top and/or bottom, meme-poster style.
     Use this instead of build_quote_svg when the feeling calls for a real
-    atmospheric setting instead of an isolated subject on plain background."""
+    atmospheric setting instead of an isolated subject on plain background.
+    soft_defs() gradients are injected automatically — don't prepend them yourself."""
     body = [f'<svg viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">']
+    body.append(soft_defs())
     body.append(f'<g>{scene_content}</g>')
     if top_lines:
         for i, line in enumerate(top_lines):
@@ -813,6 +885,18 @@ def worker_face(cx, cy, s=1.0, mood="neutral", glasses=True, tilt=0,
 worker_head = worker_face
 
 
+def _standing_torso_legs(shirt, pants):
+    """Shared torso+legs geometry for every worker_figure pose whose lower
+    body doesn't change (reach/sip/wave/point/stand) — only the arms differ
+    between these poses, so this is factored out once instead of repeated
+    per pose (previously identical code was copy-pasted 5 times, which is
+    exactly the kind of duplication that caused editing bugs elsewhere in
+    this file — see SKILL.md's pitfalls list)."""
+    return (f'<rect x="-42" y="15" width="84" height="115" rx="18" fill="{shirt}" stroke="{INK}" stroke-width="4.5"/>'
+            f'<path d="M -25 115 L -35 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>'
+            f'<path d="M 25 115 L 35 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
+
+
 def worker_figure(cx, cy, s=1.0, mood="neutral", pose="stand", glasses=True,
                    hair="fringe", mustache=False, hair_color=None, shirt_color=None):
     """Full 打工人 figure — head + torso + arms + legs — with a pose
@@ -854,37 +938,27 @@ def worker_figure(cx, cy, s=1.0, mood="neutral", pose="stand", glasses=True,
         g.append(f'<path d="M 50 40 L 30 100" stroke="{shirt}" stroke-width="16" stroke-linecap="round"/>')
         g.append(worker_face(20, -35, 0.85, tilt=20, **face_kwargs))
     elif pose == "reach":
-        g.append(f'<rect x="-45" y="10" width="90" height="120" rx="20" fill="{shirt}" stroke="{INK}" stroke-width="4.5"/>')
-        g.append(f'<path d="M -30 110 L -40 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
-        g.append(f'<path d="M 30 110 L 40 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(_standing_torso_legs(shirt, pants))
         g.append(f'<path d="M -35 30 L -70 65" stroke="{shirt}" stroke-width="15" stroke-linecap="round"/>')
         g.append(f'<path d="M 35 20 L 90 -30" stroke="{shirt}" stroke-width="15" stroke-linecap="round"/>')
         g.append(worker_face(0, -50, 0.9, **face_kwargs))
     elif pose == "sip":
-        g.append(f'<rect x="-42" y="15" width="84" height="115" rx="18" fill="{shirt}" stroke="{INK}" stroke-width="4.5"/>')
-        g.append(f'<path d="M -25 115 L -35 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
-        g.append(f'<path d="M 25 115 L 35 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(_standing_torso_legs(shirt, pants))
         g.append(f'<path d="M -35 35 L -65 75" stroke="{shirt}" stroke-width="15" stroke-linecap="round"/>')
         g.append(f'<path d="M 35 30 L 60 -10" stroke="{shirt}" stroke-width="15" stroke-linecap="round"/>')
         g.append(worker_face(0, -45, 0.9, **face_kwargs))
     elif pose == "wave":
-        g.append(f'<rect x="-42" y="15" width="84" height="115" rx="18" fill="{shirt}" stroke="{INK}" stroke-width="4.5"/>')
-        g.append(f'<path d="M -25 115 L -35 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
-        g.append(f'<path d="M 25 115 L 35 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(_standing_torso_legs(shirt, pants))
         g.append(f'<path d="M -35 35 L -70 -5" stroke="{shirt}" stroke-width="15" stroke-linecap="round"/>')
         g.append(f'<path d="M 35 35 L 70 -5" stroke="{shirt}" stroke-width="15" stroke-linecap="round"/>')
         g.append(worker_face(0, -45, 0.9, **face_kwargs))
     elif pose == "point":
-        g.append(f'<rect x="-42" y="15" width="84" height="115" rx="18" fill="{shirt}" stroke="{INK}" stroke-width="4.5"/>')
-        g.append(f'<path d="M -25 115 L -35 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
-        g.append(f'<path d="M 25 115 L 35 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(_standing_torso_legs(shirt, pants))
         g.append(f'<path d="M -35 35 L -55 85" stroke="{shirt}" stroke-width="15" stroke-linecap="round"/>')
         g.append(f'<path d="M 35 30 L 100 5" stroke="{shirt}" stroke-width="15" stroke-linecap="round"/>')
         g.append(worker_face(0, -45, 0.9, **face_kwargs))
     else:  # stand
-        g.append(f'<rect x="-42" y="15" width="84" height="115" rx="18" fill="{shirt}" stroke="{INK}" stroke-width="4.5"/>')
-        g.append(f'<path d="M -25 115 L -35 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
-        g.append(f'<path d="M 25 115 L 35 190" stroke="{pants}" stroke-width="16" stroke-linecap="round"/>')
+        g.append(_standing_torso_legs(shirt, pants))
         g.append(f'<path d="M -35 35 L -60 90" stroke="{shirt}" stroke-width="15" stroke-linecap="round"/>')
         g.append(f'<path d="M 35 35 L 60 90" stroke="{shirt}" stroke-width="15" stroke-linecap="round"/>')
         g.append(worker_face(0, -45, 0.9, **face_kwargs))
